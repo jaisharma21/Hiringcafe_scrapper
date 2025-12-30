@@ -8,6 +8,7 @@ export function JobList() {
   const [loading, setLoading] = useState(true);
   const [scraping, setScraping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [jobTitle, setJobTitle] = useState('');
 
   const fetchJobs = async () => {
     try {
@@ -40,9 +41,12 @@ export function JobList() {
         'Content-Type': 'application/json',
       };
 
+      const body = jobTitle ? { jobTitle } : {};
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
+        body: Object.keys(body).length > 0 ? JSON.stringify(body) : undefined,
       });
 
       if (!response.ok) {
@@ -79,7 +83,7 @@ export function JobList() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Database className="w-6 h-6 text-gray-700" />
               <div>
@@ -88,14 +92,27 @@ export function JobList() {
               </div>
             </div>
 
-            <button
-              onClick={triggerScrape}
-              disabled={scraping}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
-            >
-              <RefreshCw className={`w-5 h-5 ${scraping ? 'animate-spin' : ''}`} />
-              {scraping ? 'Scraping...' : 'Scrape Jobs'}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                placeholder="e.g., Senior Engineer, Product Manager, Designer..."
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && triggerScrape()}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              />
+              <button
+                onClick={triggerScrape}
+                disabled={scraping}
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium whitespace-nowrap"
+              >
+                <RefreshCw className={`w-5 h-5 ${scraping ? 'animate-spin' : ''}`} />
+                {scraping ? 'Scraping...' : 'Scrape'}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              {jobTitle ? `Filtering for: "${jobTitle}"` : 'Leave empty to scrape all jobs'}
+            </p>
           </div>
         </div>
 
